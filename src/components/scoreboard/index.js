@@ -1,11 +1,8 @@
 import React from 'react';
 import './scoreboard.css';
 import axios from 'axios';
-import Jumbotron from 'react-bootstrap/Jumbotron';
-import Container from 'react-bootstrap/Container';
+import PropTypes from 'prop-types';
 import Spinner from 'react-bootstrap/Spinner';
-import DatePicker from 'react-datepicker';
-import { addDays } from 'date-fns';
 import Scorecard from '../scorecard';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -14,7 +11,6 @@ class Scoreboard extends React.Component {
     super(props);
     this.state = {
       scores: [],
-      date: new Date(Date.now() - 86400000),
     };
   }
 
@@ -22,9 +18,16 @@ class Scoreboard extends React.Component {
     this.fetchScores();
   }
 
+  componentDidUpdate(newProps) {
+    const { date } = this.props;
+    if (newProps.date !== date) {
+      this.fetchScores();
+    }
+  }
+
   fetchScores() {
     this.setState({ scores: [] });
-    const { date } = this.state;
+    const { date } = this.props;
     axios.get(`${process.env.REACT_APP_SERVER_URL}/nba/scoreboard/${date.toISOString()}`)
       .then((scheduleRes) => {
         const scores = scheduleRes.data;
@@ -33,7 +36,8 @@ class Scoreboard extends React.Component {
   }
 
   render() {
-    const { date, scores } = this.state;
+    const { date } = this.props;
+    const { scores } = this.state;
     const lineScore = scores.lineScore || [];
     const scorecards = [];
 
@@ -60,34 +64,16 @@ class Scoreboard extends React.Component {
     }
 
     return (
-      <div>
-        <Jumbotron fluid>
-          <Container className="title">
-            <h1>NBA Scoreboard Demo</h1>
-            <p>
-              This is a small react demo that allows you to pick the date
-              and see the scores of NBA games on that date!
-            </p>
-
-            <DatePicker
-              selected={date}
-              onChange={(newDate) => {
-                this.setState({ date: newDate }, this.fetchScores);
-              }}
-              maxDate={addDays(new Date(), -1)}
-              placeholderText="Select a date before yesterady"
-            />
-          </Container>
-        </Jumbotron>
-        <div className="scorecards">
-          {displayElements}
-        </div>
+      <div className="scorecards">
+        {displayElements}
       </div>
 
     );
   }
 }
 
-Scoreboard.propTypes = {};
+Scoreboard.propTypes = {
+  date: PropTypes.instanceOf(Date).isRequired,
+};
 
 export default Scoreboard;
