@@ -1,0 +1,9 @@
+.scorecard {
+    min-width: 18rem;
+    margin: 1rem;
+    text-align: center;
+}
+
+.bold {
+    font-weight: bold;
+}
